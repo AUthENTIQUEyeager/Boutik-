@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -33,6 +34,7 @@ export const secondary = [
 export default function AppNav() {
   const pathname = usePathname();
   const onSecondaryPage = secondary.some((s) => pathname?.startsWith(s.href));
+  const plusActive = onSecondaryPage || pathname === "/plus";
 
   return (
     <>
@@ -43,27 +45,47 @@ export default function AppNav() {
             const active = pathname?.startsWith(href);
             return (
               <li key={href} className="flex-1">
-                <Link
-                  href={href}
-                  className={`flex flex-col items-center gap-1 py-2 active:scale-[0.97] transition-transform ${
-                    active ? "text-accent" : "text-ink-faint"
-                  }`}
-                >
-                  <Icon size={22} strokeWidth={active ? 2.2 : 1.8} />
-                  <span className="text-[11px]">{label}</span>
+                <Link href={href} className="flex flex-col items-center py-2">
+                  <motion.div
+                    whileTap={{ scale: 0.88 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                    className={`flex flex-col items-center gap-1 relative ${
+                      active ? "text-accent" : "text-ink-faint"
+                    }`}
+                  >
+                    {active && (
+                      <motion.span
+                        layoutId="tab-active-dot"
+                        className="absolute -top-2.5 h-1 w-4 rounded-full bg-accent"
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      />
+                    )}
+                    <Icon size={22} strokeWidth={active ? 2.2 : 1.8} />
+                    <span className="text-[11px]">{label}</span>
+                  </motion.div>
                 </Link>
               </li>
             );
           })}
           <li className="flex-1">
-            <Link
-              href="/plus"
-              className={`flex flex-col items-center gap-1 py-2 active:scale-[0.97] transition-transform ${
-                onSecondaryPage || pathname === "/plus" ? "text-accent" : "text-ink-faint"
-              }`}
-            >
-              <MoreHorizontal size={22} strokeWidth={onSecondaryPage || pathname === "/plus" ? 2.2 : 1.8} />
-              <span className="text-[11px]">Plus</span>
+            <Link href="/plus" className="flex flex-col items-center py-2">
+              <motion.div
+                whileTap={{ scale: 0.88 }}
+                transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                className={`flex flex-col items-center gap-1 relative ${
+                  plusActive ? "text-accent" : "text-ink-faint"
+                }`}
+              >
+                {plusActive && (
+                  <motion.span
+                    layoutId="tab-active-dot"
+                    className="absolute -top-2.5 h-1 w-4 rounded-full bg-accent"
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
+                <MoreHorizontal size={22} strokeWidth={plusActive ? 2.2 : 1.8} />
+                <span className="text-[11px]">Plus</span>
+              </motion.div>
             </Link>
           </li>
         </ul>
@@ -79,14 +101,18 @@ export default function AppNav() {
             const active = pathname?.startsWith(href);
             return (
               <li key={href}>
-                <Link
-                  href={href}
-                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors ${
-                    active ? "bg-accent-light text-accent" : "text-ink-soft hover:bg-surfacealt"
-                  }`}
-                >
-                  <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
-                  <span className="text-[14px] font-medium">{label}</span>
+                <Link href={href}>
+                  <motion.div
+                    whileTap={{ scale: 0.97 }}
+                    whileHover={{ x: active ? 0 : 2 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors ${
+                      active ? "bg-accent-light text-accent" : "text-ink-soft hover:bg-surfacealt"
+                    }`}
+                  >
+                    <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
+                    <span className="text-[14px] font-medium">{label}</span>
+                  </motion.div>
                 </Link>
               </li>
             );
