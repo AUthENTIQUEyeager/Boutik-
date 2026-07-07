@@ -34,7 +34,8 @@ Dans le projet Supabase → **Project Settings** → **API** :
 
 1. Dans Supabase → **SQL Editor** → **New query**.
 2. Colle l'intégralité du contenu de `supabase/migrations/001_init.sql` et exécute (**Run**).
-3. Vérifie dans **Table Editor** que les 7 tables sont créées (`profiles`, `clients`, `produits`, `ventes`, `depenses`, `dettes`, `notifications`).
+3. Fais de même avec `supabase/migrations/002_fournisseurs_livraisons_employes.sql` (ajoute fournisseurs, livraisons et employés).
+4. Vérifie dans **Table Editor** que les tables sont créées (`profiles`, `clients`, `produits`, `ventes`, `depenses`, `dettes`, `notifications`, `fournisseurs`, `livraisons`, `livraison_lignes`, `employes`).
 
 ### 4. Désactiver la confirmation email (numéro de téléphone uniquement)
 
@@ -111,6 +112,16 @@ supabase/
 ## Fonctionnement hors-ligne
 
 Toute écriture (vente, client, produit, dépense, dette) passe d'abord par Dexie (IndexedDB), qui met à jour l'interface immédiatement puis ajoute l'opération à une file `sync_queue`. Au retour de connexion (`online` event + polling 30s), la file est vidée vers Supabase dans l'ordre chronologique via un `upsert` (stratégie "dernière écriture gagne"). Un point discret dans l'en-tête indique l'état : en ligne / hors-ligne / synchronisation en cours.
+
+Les modules **Fournisseurs**, **Livraisons** et **Employés** (ajoutés après le MVP initial) fonctionnent en écriture directe vers Supabase (connexion requise) car les livraisons impliquent une écriture transactionnelle multi-tables (en-tête + lignes) qui ne se prête pas simplement à la file de synchronisation. Les modules cœur (ventes, clients, produits, dépenses, dettes) restent pleinement utilisables hors-ligne.
+
+## Navigation mobile
+
+La barre d'onglets du bas reste volontairement courte (Accueil, Ventes, Clients, Dettes) pour rester lisible sur petit écran. Un 5ᵉ onglet **Plus** ouvre un menu donnant accès à Produits, Dépenses, Fournisseurs, Livraisons et Employés. Sur tablette/PC, tous ces liens apparaissent directement dans la barre latérale.
+
+## Vente rapide
+
+L'écran Ventes s'ouvre par défaut en mode **Vente rapide** : une grille de produits, un tap ajoute au panier, un second tap (ou +/-) ajuste la quantité. Un bandeau flottant affiche le total et valide la vente en un geste (client optionnel). Le mode **Vente détaillée** (formulaire classique) et l'**Historique** restent accessibles via les boutons en haut de l'écran.
 
 ## Vérification de blocage de compte
 

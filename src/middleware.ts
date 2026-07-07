@@ -30,7 +30,9 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const isAppRoute = path.startsWith("/dashboard") || path.startsWith("/clients") ||
     path.startsWith("/produits") || path.startsWith("/ventes") ||
-    path.startsWith("/depenses") || path.startsWith("/dettes") || path.startsWith("/admin");
+    path.startsWith("/depenses") || path.startsWith("/dettes") || path.startsWith("/admin") ||
+    path.startsWith("/fournisseurs") || path.startsWith("/livraisons") ||
+    path.startsWith("/employes") || path.startsWith("/plus");
 
   if (isAppRoute && !user) {
     const url = request.nextUrl.clone();

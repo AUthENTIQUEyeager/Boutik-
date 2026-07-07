@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Minus, ShoppingBag } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { writeLocal } from "@/lib/dexie";
 import { flushSyncQueue } from "@/lib/sync";
@@ -14,16 +14,25 @@ interface VenteRow extends Vente {
   client_nom?: string;
 }
 
+type Mode = "rapide" | "historique";
+
 export default function VentesPage() {
   const userId = useUserId();
   const supabase = createClient();
+  const [mode, setMode] = useState<Mode>("rapide");
   const [ventes, setVentes] = useState<VenteRow[]>([]);
   const [produits, setProduits] = useState<Produit[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Vente rapide : panier { produit_id: quantite }
+  const [panier, setPanier] = useState<Record<string, number>>({});
+  const [panierClientId, setPanierClientId] = useState("");
+  const [validating, setValidating] = useState(false);
+
+  // Vente détaillée (formulaire complet)
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const [produitId, setProduitId] = useState("");
   const [clientId, setClientId] = useState("");
   const [quantite, setQuantite] = useState("1");
@@ -62,7 +71,82 @@ export default function VentesPage() {
     setLoading(false);
   }
 
-  function openNew() {
+  // ---------- Vente rapide ----------
+
+  function stockDisponible(produitId: string) {
+    const p = produits.find((x) => x.id === produitId);
+    if (!p) return 0;
+    return p.quantite_stock - (panier[produitId] ?? 0);
+  }
+
+  function addToPanier(produitId: string) {
+    if (stockDisponible(produitId) <= 0) return;
+    setPanier((prev) => ({ ...prev, [produitId]: (prev[produitId] ?? 0) + 1 }));
+  }
+
+  function removeFromPanier(produitId: string) {
+    setPanier((prev) => {
+      const next = { ...prev };
+      if (!next[produitId]) return prev;
+      next[produitId] -= 1;
+      if (next[produitId] <= 0) delete next[produitId];
+      return next;
+    });
+  }
+
+  const panierItems = useMemo(
+    () =>
+      Object.entries(panier)
+        .map(([id, qty]) => ({ produit: produits.find((p) => p.id === id), qty }))
+        .filter((x) => x.produit),
+    [panier, produits]
+  );
+
+  const panierTotal = panierItems.reduce((sum, x) => sum + (x.produit?.prix_vente ?? 0) * x.qty, 0);
+  const panierCount = panierItems.reduce((sum, x) => sum + x.qty, 0);
+
+  async function validerPanier() {
+    if (!userId || panierItems.length === 0) return;
+    setValidating(true);
+
+    const nouvellesVentes: VenteRow[] = [];
+
+    for (const { produit, qty } of panierItems) {
+      if (!produit) continue;
+      const benefice = (produit.prix_vente - produit.prix_achat) * qty;
+      const payload = {
+        shop_id: userId,
+        client_id: panierClientId || null,
+        produit_id: produit.id,
+        quantite: qty,
+        prix_achat_unitaire: produit.prix_achat,
+        prix_vente_unitaire: produit.prix_vente,
+        benefice_calcule: benefice,
+        created_at: new Date().toISOString(),
+      };
+      const id = await writeLocal("ventes", "insert", payload);
+      nouvellesVentes.push({
+        ...payload,
+        id,
+        produit_nom: produit.nom,
+        client_nom: clients.find((c) => c.id === panierClientId)?.nom,
+      } as VenteRow);
+    }
+
+    // Mise à jour optimiste du stock local
+    setProduits((prev) =>
+      prev.map((p) => (panier[p.id] ? { ...p, quantite_stock: p.quantite_stock - panier[p.id] } : p))
+    );
+    setVentes((prev) => [...nouvellesVentes, ...prev]);
+    setPanier({});
+    setPanierClientId("");
+    setValidating(false);
+    flushSyncQueue();
+  }
+
+  // ---------- Vente détaillée ----------
+
+  function openDetailForm() {
     setError(null);
     setProduitId(produits[0]?.id ?? "");
     setClientId("");
@@ -105,7 +189,6 @@ export default function VentesPage() {
 
     const id = await writeLocal("ventes", "insert", payload);
 
-    // Mise à jour optimiste : stock décrémenté localement, liste rafraîchie
     setProduits((prev) =>
       prev.map((p) => (p.id === produit.id ? { ...p, quantite_stock: p.quantite_stock - qty } : p))
     );
@@ -125,15 +208,127 @@ export default function VentesPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-[20px] font-medium text-ink">Ventes</h1>
-        <button onClick={openNew} className="btn-primary flex items-center gap-1.5 px-3 py-2">
-          <Plus size={18} /> Nouvelle vente
+        <button onClick={openDetailForm} className="btn-secondary flex items-center gap-1.5 px-3 py-2 text-[13px]">
+          <Plus size={16} /> Vente détaillée
+        </button>
+      </div>
+
+      {/* Bascule Vente rapide / Historique */}
+      <div className="flex bg-surfacealt rounded-2xl p-1 mb-5 max-w-xs">
+        <button
+          onClick={() => setMode("rapide")}
+          className={`flex-1 text-[13px] font-medium py-2 rounded-xl transition-colors ${
+            mode === "rapide" ? "bg-white text-ink shadow-card" : "text-ink-faint"
+          }`}
+        >
+          Vente rapide
+        </button>
+        <button
+          onClick={() => setMode("historique")}
+          className={`flex-1 text-[13px] font-medium py-2 rounded-xl transition-colors ${
+            mode === "historique" ? "bg-white text-ink shadow-card" : "text-ink-faint"
+          }`}
+        >
+          Historique
         </button>
       </div>
 
       {loading ? (
         <p className="text-ink-faint text-[14px]">Chargement…</p>
+      ) : mode === "rapide" ? (
+        <div className="pb-24">
+          {produits.length === 0 ? (
+            <div className="card p-6 text-center">
+              <p className="text-[14px] text-ink-soft">Ajoute d&apos;abord des produits pour vendre.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              {produits.map((p) => {
+                const qtyInPanier = panier[p.id] ?? 0;
+                const disponible = stockDisponible(p.id);
+                const rupture = disponible <= 0 && qtyInPanier === 0;
+                return (
+                  <div
+                    key={p.id}
+                    className={`card p-3 flex flex-col ${rupture ? "opacity-40" : ""}`}
+                  >
+                    <p className="text-[13px] font-medium text-ink leading-tight mb-1">{p.nom}</p>
+                    <p className="text-[12px] text-ink-faint mb-2">
+                      {Math.round(p.prix_vente).toLocaleString("fr-FR")} FCFA
+                    </p>
+                    <div className="mt-auto flex items-center justify-between">
+                      {qtyInPanier > 0 ? (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => removeFromPanier(p.id)}
+                            className="h-7 w-7 rounded-full bg-surfacealt flex items-center justify-center active:scale-[0.9] transition-transform"
+                          >
+                            <Minus size={14} />
+                          </button>
+                          <span className="text-[14px] font-medium text-ink w-4 text-center">{qtyInPanier}</span>
+                          <button
+                            onClick={() => addToPanier(p.id)}
+                            disabled={disponible <= 0}
+                            className="h-7 w-7 rounded-full bg-accent text-white flex items-center justify-center active:scale-[0.9] transition-transform disabled:opacity-40"
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => addToPanier(p.id)}
+                          disabled={rupture}
+                          className="btn-primary py-1.5 px-3 text-[13px] w-full text-center disabled:opacity-40"
+                        >
+                          {rupture ? "Rupture" : "Ajouter"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <AnimatePresence>
+            {panierCount > 0 && (
+              <motion.div
+                initial={{ y: 80, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 80, opacity: 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="fixed bottom-[64px] md:bottom-4 left-4 right-4 md:left-auto md:right-6 md:w-96 z-30"
+              >
+                <div className="card p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <ShoppingBag size={16} className="text-accent" />
+                      <span className="text-[13px] text-ink-soft">{panierCount} article{panierCount > 1 ? "s" : ""}</span>
+                    </div>
+                    <span className="text-[16px] font-medium text-ink">
+                      {Math.round(panierTotal).toLocaleString("fr-FR")} FCFA
+                    </span>
+                  </div>
+                  <select
+                    value={panierClientId}
+                    onChange={(e) => setPanierClientId(e.target.value)}
+                    className="input-field py-2 text-[13px] mb-2"
+                  >
+                    <option value="">Client de passage</option>
+                    {clients.map((c) => (
+                      <option key={c.id} value={c.id}>{c.nom}</option>
+                    ))}
+                  </select>
+                  <button onClick={validerPanier} disabled={validating} className="btn-primary w-full">
+                    {validating ? "Enregistrement…" : "Valider la vente"}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       ) : ventes.length === 0 ? (
         <div className="card p-6 text-center">
           <p className="text-[14px] text-ink-soft">Aucune vente enregistrée.</p>
@@ -183,7 +378,7 @@ export default function VentesPage() {
               className="bg-white rounded-t-card md:rounded-card p-5 w-full md:max-w-sm"
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-[16px] font-medium text-ink">Nouvelle vente</h2>
+                <h2 className="text-[16px] font-medium text-ink">Vente détaillée</h2>
                 <button onClick={() => setShowForm(false)}>
                   <X size={20} className="text-ink-faint" />
                 </button>
