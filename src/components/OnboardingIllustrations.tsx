@@ -77,6 +77,34 @@ export function IllustrationCalcul() {
   );
 }
 
+export function IllustrationAssistant() {
+  return (
+    <svg viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="120" cy="120" r="110" fill="#FDF0F7" />
+      {/* téléphone */}
+      <rect x="82" y="42" width="76" height="150" rx="16" fill="#6D4AFF" />
+      <rect x="90" y="58" width="60" height="118" rx="8" fill="#FFFFFF" />
+      {/* bulle de discussion utilisateur */}
+      <rect x="98" y="70" width="36" height="16" rx="8" fill="#F1ECFF" />
+      {/* bulle de réponse assistant, avec étincelle */}
+      <rect x="106" y="94" width="44" height="20" rx="10" fill="#6D4AFF" />
+      <g transform="translate(146 88)">
+        <path d="M0 -8 L2.2 -2.2 L8 0 L2.2 2.2 L0 8 L-2.2 2.2 L-8 0 L-2.2 -2.2 Z" fill="#FFD166" />
+      </g>
+      <rect x="98" y="122" width="30" height="14" rx="7" fill="#F1ECFF" />
+      {/* étoiles décoratives autour, couleurs variées */}
+      <g transform="translate(52 60)">
+        <path d="M0 -12 L3.2 -3.2 L12 0 L3.2 3.2 L0 12 L-3.2 3.2 L-12 0 L-3.2 -3.2 Z" fill="#FF8FA3" />
+      </g>
+      <g transform="translate(190 150)">
+        <path d="M0 -9 L2.4 -2.4 L9 0 L2.4 2.4 L0 9 L-2.4 2.4 L-9 0 L-2.4 -2.4 Z" fill="#4CC9F0" />
+      </g>
+      <circle cx="45" cy="170" r="8" fill="#FFD166" />
+      <circle cx="195" cy="60" r="7" fill="#6D4AFF" opacity="0.6" />
+    </svg>
+  );
+}
+
 export function IllustrationBoutikPlus() {
   return (
     <svg viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -8,6 +8,7 @@ import {
   IllustrationCahier,
   IllustrationDettes,
   IllustrationCalcul,
+  IllustrationAssistant,
   IllustrationBoutikPlus,
 } from "./OnboardingIllustrations";
 
@@ -26,6 +27,11 @@ const slides = [
     Illustration: IllustrationCalcul,
     title: "Tu calcules tes bénéfices à la main chaque soir ?",
     text: "Boutik+ calcule automatiquement ton bénéfice à chaque vente.",
+  },
+  {
+    Illustration: IllustrationAssistant,
+    title: "Une question ? Demande à l'assistant.",
+    text: "Bénéfices, stock, dettes : pose ta question, l'assistant IA de Boutik+ te répond en français.",
   },
   {
     Illustration: IllustrationBoutikPlus,
