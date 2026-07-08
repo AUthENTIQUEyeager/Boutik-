@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, X, ChevronRight } from "lucide-react";
+import { Plus, X, ChevronRight, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { writeLocal } from "@/lib/dexie";
 import { flushSyncQueue } from "@/lib/sync";
@@ -66,6 +66,10 @@ export default function ClientsPage() {
 
   return (
     <div>
+      <Link href="/plus" className="md:hidden flex items-center gap-1 text-ink-soft text-[14px] mb-4">
+        <ArrowLeft size={18} /> Retour
+      </Link>
+
       <div className="flex items-center justify-between mb-5">
         <h1 className="text-[20px] font-medium text-ink">Clients</h1>
         <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-1.5 px-3 py-2">

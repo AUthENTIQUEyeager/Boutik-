@@ -40,6 +40,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Un utilisateur déjà connecté ne doit plus jamais retomber sur l'onboarding
+  // ou les écrans de connexion/inscription — il reste connecté tant qu'il ne
+  // se déconnecte pas explicitement.
+  const isAuthEntryRoute = path === "/" || path.startsWith("/login") || path.startsWith("/register");
+  if (isAuthEntryRoute && user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/dashboard";
+    return NextResponse.redirect(url);
+  }
+
   return response;
 }
 

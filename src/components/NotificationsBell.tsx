@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Bell } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { AppNotification } from "@/types/database";
@@ -40,7 +41,7 @@ export default function NotificationsBell({ shopId }: { shopId: string }) {
   }
 
   return (
-    <div className="relative">
+    <>
       <button onClick={markAllRead} className="relative text-ink-soft" aria-label="Notifications">
         <Bell size={20} />
         {unread > 0 && (
@@ -50,22 +51,41 @@ export default function NotificationsBell({ shopId }: { shopId: string }) {
         )}
       </button>
 
-      {open && (
-        <div className="absolute right-0 mt-2 w-72 card p-2 max-h-80 overflow-y-auto z-30">
-          {notifications.length === 0 ? (
-            <p className="text-[13px] text-ink-faint p-3 text-center">Aucune notification.</p>
-          ) : (
-            notifications.map((n) => (
-              <div key={n.id} className="px-3 py-2 rounded-xl hover:bg-surfacealt">
-                <p className="text-[13px] text-ink">{n.message}</p>
-                <p className="text-[11px] text-ink-faint mt-0.5">
-                  {new Date(n.created_at).toLocaleString("fr-FR")}
-                </p>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-    </div>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            className="fixed inset-0 z-40 bg-ink/20 flex items-start justify-center px-4 pt-16"
+            onClick={() => setOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: -12, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -12, scale: 0.97 }}
+              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              className="card p-2 w-full max-w-sm max-h-[70vh] overflow-y-auto"
+            >
+              <p className="text-[13px] font-medium text-ink px-3 py-2">Notifications</p>
+              {notifications.length === 0 ? (
+                <p className="text-[13px] text-ink-faint p-3 text-center">Aucune notification.</p>
+              ) : (
+                notifications.map((n) => (
+                  <div key={n.id} className="px-3 py-2 rounded-xl hover:bg-surfacealt">
+                    <p className="text-[13px] text-ink">{n.message}</p>
+                    <p className="text-[11px] text-ink-faint mt-0.5">
+                      {new Date(n.created_at).toLocaleString("fr-FR")}
+                    </p>
+                  </div>
+                ))
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

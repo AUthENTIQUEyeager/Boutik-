@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, X, AlertTriangle, ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { Plus, X, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { writeLocal } from "@/lib/dexie";
 import { flushSyncQueue } from "@/lib/sync";
@@ -100,10 +99,6 @@ export default function ProduitsPage() {
 
   return (
     <div>
-      <Link href="/plus" className="md:hidden flex items-center gap-1 text-ink-soft text-[14px] mb-4">
-        <ArrowLeft size={18} /> Retour
-      </Link>
-
       <div className="flex items-center justify-between mb-5">
         <h1 className="text-[20px] font-medium text-ink">Produits &amp; stock</h1>
         <button onClick={openNew} className="btn-primary flex items-center gap-1.5 px-3 py-2">

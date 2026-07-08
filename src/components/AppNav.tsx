@@ -19,12 +19,12 @@ import {
 const primary = [
   { href: "/dashboard", label: "Accueil", icon: LayoutDashboard },
   { href: "/ventes", label: "Ventes", icon: ShoppingCart },
-  { href: "/clients", label: "Clients", icon: Users },
+  { href: "/produits", label: "Produits", icon: Package },
   { href: "/dettes", label: "Dettes", icon: HandCoins },
 ];
 
 export const secondary = [
-  { href: "/produits", label: "Produits & stock", icon: Package },
+  { href: "/clients", label: "Clients", icon: Users },
   { href: "/depenses", label: "Dépenses", icon: Receipt },
   { href: "/fournisseurs", label: "Fournisseurs", icon: Truck },
   { href: "/livraisons", label: "Livraisons", icon: ClipboardList },
