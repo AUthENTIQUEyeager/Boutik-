@@ -6,6 +6,7 @@ import BlockedGuard from "@/components/BlockedGuard";
 import InstallPrompt from "@/components/InstallPrompt";
 import NotificationsBell from "@/components/NotificationsBell";
 import LogoutButton from "@/components/LogoutButton";
+import AssistantWidget from "@/components/AssistantWidget";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient();
@@ -39,6 +40,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </div>
       <BlockedGuard userId={user.id} />
       <InstallPrompt />
+      <AssistantWidget />
     </div>
   );
 }

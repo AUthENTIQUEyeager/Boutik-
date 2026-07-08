@@ -10,6 +10,7 @@ export interface Profile {
   status: ProfileStatus;
   subscription_expires_at: string;
   ai_credits_used: number;
+  ai_credits_reset_at: string;
   created_at: string;
 }
 
