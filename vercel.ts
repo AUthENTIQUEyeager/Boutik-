@@ -4,12 +4,12 @@ export const config: VercelConfig = {
   buildCommand: 'npm run build',
   framework: 'nextjs',
   headers: [
-    routes.cacheControl('/_next/static/*', {
+    routes.cacheControl('/_next/static/(.*)', {
       public: true,
       maxAge: '31536000s', // 1 year
       immutable: true
     }),
-    routes.cacheControl('/static/*', {
+    routes.cacheControl('/static/(.*)', {
       public: true,
       maxAge: '86400s', // 1 day
     })
