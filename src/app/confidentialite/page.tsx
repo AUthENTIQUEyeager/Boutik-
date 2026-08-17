@@ -183,8 +183,8 @@ export default function ConfidentialitePage() {
           </ul>
           <p className="text-[15px] text-ink mt-2">
             Pour exercer ces droits, veuillez nous contacter à
-            <a href="mailto:privacy@boutik-plus.example" className="underline">
-              privacy@boutik-plus.example
+            <a href="mailto:authentique.studio.web@gmail.com" className="underline">
+              authentique.studio.web@gmail.com
             </a>.
           </p>
         </section>
