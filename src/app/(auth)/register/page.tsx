@@ -80,7 +80,7 @@ export default function RegisterPage() {
       <div className="max-w-sm w-full mx-auto">
         <h1 className="text-[22px] font-medium text-ink mb-1">Créer mon compte</h1>
         <p className="text-[14px] text-ink-soft mb-8">
-          3000 FCFA par mois. Aucune carte bancaire nécessaire.
+          Commencez gratuitement (très limité) ou passez à 3000 ou 5000 FCFA/mois.
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -129,6 +129,28 @@ export default function RegisterPage() {
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              En continuant, vous acceptez notre
+              <a href="/confidentialite" className="underline hover:no-underline">
+                politique de confidentialité
+              </a>.
+            </p>
+            <div className="flex items-start space-x-3">
+              <input
+                type="checkbox"
+                id="privacy-consent"
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500"
+              />
+              <label
+                htmlFor="privacy-consent"
+                className="text-sm leading-none text-gray-900"
+              >
+                J'ai lu et accepte la politique de confidentialité
+              </label>
             </div>
           </div>
 
